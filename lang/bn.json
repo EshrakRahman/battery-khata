@@ -48,5 +48,16 @@
     "Supplier Returned": "সরবরাহকারীকে ফেরত",
     "Scrap": "ভাঙা মাল",
     "Brand": "ব্র্যান্ড",
-    "Model": "মডেল"
+    "Model": "মডেল",
+    "Transactions": "লেনদেনসমূহ",
+    "Transaction Type": "লেনদেনের ধরন",
+    "Performed By": "সম্পাদনকারী",
+    "Date & Time": "তারিখ ও সময়",
+    "Transfer In": "স্থানান্তর প্রবেশ",
+    "Transfer Out": "স্থানান্তর বহির্গমন",
+    "Warranty In": "ওয়ারেন্টি প্রবেশ",
+    "Warranty Out": "ওয়ারেন্টি বহির্গমন",
+    "Buffer Return": "বাফার ফেরত",
+    "Buffer Issue": "বাফার ইস্যু",
+    "Notes": "মন্তব্য"
 }

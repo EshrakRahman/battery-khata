@@ -1,14 +1,18 @@
 <?php
 
 use App\Enums\BatteryStatus;
+use App\Enums\TransactionType;
 use App\Enums\UserRole;
 use App\Filament\Resources\BatterySerials\Pages\CreateBatterySerial;
 use App\Filament\Resources\BatterySerials\Pages\EditBatterySerial;
 use App\Filament\Resources\BatterySerials\Pages\ListBatterySerials;
+use App\Filament\Resources\BatterySerials\RelationManagers\TransactionsRelationManager;
 use App\Models\BatterySerial;
+use App\Models\InventoryTransaction;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
+use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -97,4 +101,33 @@ test('can edit a battery serial', function () {
         ->assertHasNoFormErrors();
 
     expect($serial->refresh()->serial_no)->toBe('NEW12345');
+});
+
+test('battery serial edit page shows related transaction history', function () {
+    $serial = BatterySerial::create([
+        'product_id' => $this->product->id,
+        'serial_no' => 'SN_HIST_123',
+        'current_status' => BatteryStatus::InStock,
+    ]);
+
+    $warehouse = Warehouse::create([
+        'name' => 'Test Godown',
+        'location' => 'Dhaka',
+    ]);
+
+    $transaction = InventoryTransaction::create([
+        'battery_serial_id' => $serial->id,
+        'warehouse_id' => $warehouse->id,
+        'transaction_type' => TransactionType::Purchase,
+        'notes' => 'Received from supplier',
+        'created_by' => $this->admin->id,
+    ]);
+
+    Livewire::test(TransactionsRelationManager::class, [
+        'ownerRecord' => $serial,
+        'pageClass' => EditBatterySerial::class,
+    ])
+        ->assertCanSeeTableRecords([$transaction])
+        ->assertCanRenderTableColumn('transaction_type')
+        ->assertCanRenderTableColumn('warehouse.name');
 });

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\BatterySerials;
 use App\Filament\Resources\BatterySerials\Pages\CreateBatterySerial;
 use App\Filament\Resources\BatterySerials\Pages\EditBatterySerial;
 use App\Filament\Resources\BatterySerials\Pages\ListBatterySerials;
+use App\Filament\Resources\BatterySerials\RelationManagers\TransactionsRelationManager;
 use App\Filament\Resources\BatterySerials\Schemas\BatterySerialForm;
 use App\Filament\Resources\BatterySerials\Tables\BatterySerialsTable;
 use App\Models\BatterySerial;
@@ -53,7 +54,7 @@ class BatterySerialResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TransactionsRelationManager::class,
         ];
     }
 
