@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperPostDatedCheque
+ */
 #[Fillable([
     'customer_id',
     'payment_id',

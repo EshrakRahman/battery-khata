@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @mixin IdeHelperBatterySerial
+ */
 #[Fillable(['product_id', 'serial_no', 'current_status'])]
 class BatterySerial extends Model
 {

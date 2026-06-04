@@ -6,6 +6,9 @@ use App\Enums\LenderType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperLoanAccount
+ */
 #[Fillable([
     'lender_type',
     'lender_reference_id',

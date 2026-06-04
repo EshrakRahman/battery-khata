@@ -23,6 +23,8 @@ use Illuminate\Notifications\Notifiable;
  * @property string $email
  * @property UserRole $role
  * @property bool $is_active
+ *
+ * @mixin IdeHelperUser
  */
 class User extends Authenticatable implements FilamentUser
 {

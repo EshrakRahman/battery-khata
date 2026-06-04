@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperInventoryTransaction
+ */
 #[Fillable([
     'battery_serial_id',
     'warehouse_id',

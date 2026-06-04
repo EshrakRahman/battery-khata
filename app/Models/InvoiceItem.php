@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperInvoiceItem
+ */
 #[Fillable([
     'invoice_id',
     'product_id',

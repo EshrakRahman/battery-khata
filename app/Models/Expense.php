@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperExpense
+ */
 #[Fillable([
     'expense_category_id',
     'cash_register_session_id',

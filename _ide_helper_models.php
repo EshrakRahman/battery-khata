@@ -981,12 +981,12 @@ namespace App\Models{
 /**
  * @property int $id
  * @property string $name
- * @property string|null $phone
+ * @property ?string $phone
  * @property string $email
+ * @property UserRole $role
+ * @property bool $is_active
  * @property \Carbon\CarbonImmutable|null $email_verified_at
  * @property string $password
- * @property \App\Enums\UserRole $role
- * @property bool $is_active
  * @property string|null $remember_token
  * @property \Carbon\CarbonImmutable|null $created_at
  * @property \Carbon\CarbonImmutable|null $updated_at

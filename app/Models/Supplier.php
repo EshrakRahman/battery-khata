@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperSupplier
+ */
 #[Fillable(['name', 'mobile', 'address', 'supplier_type'])]
 class Supplier extends Model
 {

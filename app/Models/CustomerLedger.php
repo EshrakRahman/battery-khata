@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperCustomerLedger
+ */
 #[Fillable([
     'customer_id',
     'transaction_date',

@@ -5,3 +5,5 @@ parameters:
     excludePaths:
         - bootstrap/cache
         - storage
+    scanFiles:
+        - _ide_helper_models.php

@@ -7,6 +7,9 @@ use App\Enums\TransactionDirection;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperCashbookEntry
+ */
 #[Fillable([
     'cash_register_session_id',
     'entry_type',
