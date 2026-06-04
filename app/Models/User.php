@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +16,15 @@ use Illuminate\Notifications\Notifiable;
 
 #[Fillable(['name', 'phone', 'email', 'password', 'role', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+/**
+ * @property int $id
+ * @property string $name
+ * @property ?string $phone
+ * @property string $email
+ * @property UserRole $role
+ * @property bool $is_active
+ */
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
@@ -32,5 +42,20 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Determine if the user can access the given panel.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        $isActive = (bool) $this->getAttribute('is_active');
+        $role = $this->getAttribute('role');
+
+        return $isActive && in_array($role, [
+            UserRole::Admin,
+            UserRole::Manager,
+            UserRole::CounterBoy,
+        ], true);
     }
 }
