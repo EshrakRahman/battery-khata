@@ -31,5 +31,22 @@
     "Has Serial Tracking": "সিরিয়াল ট্র্যাকিং আছে",
     "Serial Tracking": "সিরিয়াল ট্র্যাকিং",
     "Is Active": "সক্রিয় আছে",
-    "Active": "সক্রিয়"
+    "Active": "সক্রিয়",
+    "Warehouse Name": "গুদামের নাম",
+    "Warehouses": "গুদামসমূহ",
+    "Warehouse": "গুদাম",
+    "Location": "অবস্থান",
+    "Battery Serials": "ব্যাটারির সিরিয়ালসমূহ",
+    "Battery Serial": "ব্যাটারির সিরিয়াল",
+    "Serial Number": "সিরিয়াল নম্বর",
+    "Status": "অবস্থা",
+    "In Stock": "স্টকে আছে",
+    "Sold": "বিক্রি হয়েছে",
+    "Reserved": "সংরক্ষিত",
+    "Warranty Claim": "ওয়ারেন্টি দাবি",
+    "Buffer Issued": "বাফার ইস্যু",
+    "Supplier Returned": "সরবরাহকারীকে ফেরত",
+    "Scrap": "ভাঙা মাল",
+    "Brand": "ব্র্যান্ড",
+    "Model": "মডেল"
 }
