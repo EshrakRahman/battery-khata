@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PaymentMethod;
+use App\Enums\TransactionDirection;
 use App\Models\CashbookEntry;
 use App\Models\CashRegisterSession;
 use App\Models\User;
@@ -53,7 +54,7 @@ test('cashbook entries payment method enum casting', function () {
     $entry = CashbookEntry::create([
         'cash_register_session_id' => $session->id,
         'entry_type' => 'Sale',
-        'direction' => 'In',
+        'direction' => TransactionDirection::In,
         'payment_method' => PaymentMethod::Bkash,
         'amount' => 13500.00,
         'notes' => 'Received from E-Bike sale',
@@ -62,5 +63,5 @@ test('cashbook entries payment method enum casting', function () {
 
     expect($entry->payment_method)->toBe(PaymentMethod::Bkash)
         ->and($entry->amount)->toEqual(13500.00)
-        ->and($entry->direction)->toBe('In');
+        ->and($entry->direction)->toBe(TransactionDirection::In);
 });

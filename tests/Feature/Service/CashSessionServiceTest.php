@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PaymentMethod;
+use App\Enums\TransactionDirection;
 use App\Exceptions\ActiveCashSessionExistsException;
 use App\Exceptions\InvalidDenominationsTotalException;
 use App\Models\CashbookEntry;
@@ -58,7 +59,7 @@ test('closing a cash session calculates expected cash filtering non-cash payment
     CashbookEntry::create([
         'cash_register_session_id' => $session->id,
         'entry_type' => 'Sale',
-        'direction' => 'In',
+        'direction' => TransactionDirection::In,
         'payment_method' => PaymentMethod::Cash,
         'amount' => 12000.00,
         'created_by' => $this->user->id,
@@ -68,7 +69,7 @@ test('closing a cash session calculates expected cash filtering non-cash payment
     CashbookEntry::create([
         'cash_register_session_id' => $session->id,
         'entry_type' => 'Sale',
-        'direction' => 'In',
+        'direction' => TransactionDirection::In,
         'payment_method' => PaymentMethod::Bkash,
         'amount' => 15000.00,
         'created_by' => $this->user->id,
@@ -78,7 +79,7 @@ test('closing a cash session calculates expected cash filtering non-cash payment
     CashbookEntry::create([
         'cash_register_session_id' => $session->id,
         'entry_type' => 'Expense',
-        'direction' => 'Out',
+        'direction' => TransactionDirection::Out,
         'payment_method' => PaymentMethod::Cash,
         'amount' => 1500.00,
         'created_by' => $this->user->id,
@@ -88,7 +89,7 @@ test('closing a cash session calculates expected cash filtering non-cash payment
     CashbookEntry::create([
         'cash_register_session_id' => $session->id,
         'entry_type' => 'SupplierPayment',
-        'direction' => 'Out',
+        'direction' => TransactionDirection::Out,
         'payment_method' => PaymentMethod::Cash,
         'amount' => 3500.00,
         'created_by' => $this->user->id,

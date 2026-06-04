@@ -11,11 +11,14 @@ use App\Models\SupplierLedger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class LedgerService
 {
     /**
      * Record a customer ledger entry with transactional locking.
+     *
+     * @throws Throwable
      */
     public function recordCustomerTransaction(
         Customer $customer,
@@ -26,44 +29,25 @@ class LedgerService
         ?string $notes = null,
         ?Carbon $transactionDate = null
     ): CustomerLedger {
-        return DB::transaction(function () use (
-            $customer,
-            $debit,
-            $credit,
-            $transactionType,
-            $reference,
-            $notes,
-            $transactionDate
-        ) {
-            // Lock the parent Customer row to serialize running balance updates for this customer
-            $lockedCustomer = Customer::where('id', $customer->id)->lockForUpdate()->firstOrFail();
-
-            // Get the latest customer ledger entry
-            $latest = CustomerLedger::where('customer_id', $lockedCustomer->id)
-                ->latest('id')
-                ->first();
-
-            $prevBalance = $latest ? (float) $latest->running_balance : 0.00;
-
-            // Customer Running Balance: outstanding balance increases with Debit (sale), decreases with Credit (payment)
-            $runningBalance = $prevBalance + (float) $debit - (float) $credit;
-
-            return CustomerLedger::create([
-                'customer_id' => $lockedCustomer->id,
-                'transaction_date' => $transactionDate ?? now(),
-                'transaction_type' => $transactionType,
-                'reference_type' => $reference ? get_class($reference) : null,
-                'reference_id' => $reference ? $reference->id : null,
-                'debit' => $debit,
-                'credit' => $credit,
-                'running_balance' => $runningBalance,
-                'notes' => $notes,
-            ]);
-        });
+        /** @var CustomerLedger */
+        return $this->recordTransaction(
+            parent: $customer,
+            ledgerClass: CustomerLedger::class,
+            foreignKeyName: 'customer_id',
+            debit: $debit,
+            credit: $credit,
+            transactionType: $transactionType,
+            reference: $reference,
+            notes: $notes,
+            transactionDate: $transactionDate,
+            isReceivable: true
+        );
     }
 
     /**
      * Record a supplier ledger entry with transactional locking.
+     *
+     * @throws Throwable
      */
     public function recordSupplierTransaction(
         Supplier $supplier,
@@ -74,44 +58,25 @@ class LedgerService
         ?string $notes = null,
         ?Carbon $transactionDate = null
     ): SupplierLedger {
-        return DB::transaction(function () use (
-            $supplier,
-            $debit,
-            $credit,
-            $transactionType,
-            $reference,
-            $notes,
-            $transactionDate
-        ) {
-            // Lock the parent Supplier row to serialize running balance updates for this supplier
-            $lockedSupplier = Supplier::where('id', $supplier->id)->lockForUpdate()->firstOrFail();
-
-            // Get the latest supplier ledger entry
-            $latest = SupplierLedger::where('supplier_id', $lockedSupplier->id)
-                ->latest('id')
-                ->first();
-
-            $prevBalance = $latest ? (float) $latest->running_balance : 0.00;
-
-            // Supplier Running Balance: our outstanding liability to them increases with Credit (purchase), decreases with Debit (payment)
-            $runningBalance = $prevBalance + (float) $credit - (float) $debit;
-
-            return SupplierLedger::create([
-                'supplier_id' => $lockedSupplier->id,
-                'transaction_date' => $transactionDate ?? now(),
-                'transaction_type' => $transactionType,
-                'reference_type' => $reference ? get_class($reference) : null,
-                'reference_id' => $reference ? $reference->id : null,
-                'debit' => $debit,
-                'credit' => $credit,
-                'running_balance' => $runningBalance,
-                'notes' => $notes,
-            ]);
-        });
+        /** @var SupplierLedger */
+        return $this->recordTransaction(
+            parent: $supplier,
+            ledgerClass: SupplierLedger::class,
+            foreignKeyName: 'supplier_id',
+            debit: $debit,
+            credit: $credit,
+            transactionType: $transactionType,
+            reference: $reference,
+            notes: $notes,
+            transactionDate: $transactionDate,
+            isReceivable: false
+        );
     }
 
     /**
      * Record a broker ledger entry with transactional locking.
+     *
+     * @throws Throwable
      */
     public function recordBrokerTransaction(
         Broker $broker,
@@ -122,34 +87,75 @@ class LedgerService
         ?string $notes = null,
         ?Carbon $transactionDate = null
     ): BrokerLedger {
+        /** @var BrokerLedger */
+        return $this->recordTransaction(
+            parent: $broker,
+            ledgerClass: BrokerLedger::class,
+            foreignKeyName: 'broker_id',
+            debit: $debit,
+            credit: $credit,
+            transactionType: $transactionType,
+            reference: $reference,
+            notes: $notes,
+            transactionDate: $transactionDate,
+            isReceivable: false
+        );
+    }
+
+    /**
+     * Generic helper to record a ledger transaction with row locking and running balance calculations.
+     *
+     * @param  class-string<Model>  $ledgerClass  The ledger model class (CustomerLedger, SupplierLedger, or BrokerLedger)
+     *
+     * @throws Throwable
+     */
+    private function recordTransaction(
+        Model $parent,
+        string $ledgerClass,
+        string $foreignKeyName,
+        float|string $debit,
+        float|string $credit,
+        string $transactionType,
+        ?Model $reference = null,
+        ?string $notes = null,
+        ?Carbon $transactionDate = null,
+        bool $isReceivable = true
+    ): Model {
         return DB::transaction(function () use (
-            $broker,
+            $parent,
+            $ledgerClass,
+            $foreignKeyName,
             $debit,
             $credit,
             $transactionType,
             $reference,
             $notes,
-            $transactionDate
+            $transactionDate,
+            $isReceivable
         ) {
-            // Lock the parent Broker row to serialize running balance updates for this broker
-            $lockedBroker = Broker::where('id', $broker->id)->lockForUpdate()->firstOrFail();
+            // Lock the parent model record to serialize running balance calculations
+            $lockedParent = $parent::query()->where('id', $parent->getKey())->lockForUpdate()->firstOrFail();
 
-            // Get the latest broker ledger entry
-            $latest = BrokerLedger::where('broker_id', $lockedBroker->id)
+            // Get the latest ledger entry
+            $latest = $ledgerClass::query()->where($foreignKeyName, $lockedParent->getKey())
                 ->latest('id')
                 ->first();
 
-            $prevBalance = $latest ? (float) $latest->running_balance : 0.00;
+            $prevBalance = $latest?->getAttribute('running_balance') ?? '0.00';
 
-            // Broker Running Balance: commission owed increases with Credit (earned commission), decreases with Debit (payout)
-            $runningBalance = $prevBalance + (float) $credit - (float) $debit;
+            // Running Balance:
+            // - For Receivables: prevBalance + debit - credit
+            // - For Payables: prevBalance + credit - debit
+            $runningBalance = $isReceivable
+                ? bcsub(bcadd((string) $prevBalance, (string) $debit, 2), (string) $credit, 2)
+                : bcsub(bcadd((string) $prevBalance, (string) $credit, 2), (string) $debit, 2);
 
-            return BrokerLedger::create([
-                'broker_id' => $lockedBroker->id,
+            return $ledgerClass::query()->create([
+                $foreignKeyName => $lockedParent->getKey(),
                 'transaction_date' => $transactionDate ?? now(),
                 'transaction_type' => $transactionType,
                 'reference_type' => $reference ? get_class($reference) : null,
-                'reference_id' => $reference ? $reference->id : null,
+                'reference_id' => $reference?->getKey(),
                 'debit' => $debit,
                 'credit' => $credit,
                 'running_balance' => $runningBalance,

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PaymentMethod;
+use App\Enums\TransactionDirection;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,6 +23,7 @@ class CashbookEntry extends Model
     protected function casts(): array
     {
         return [
+            'direction' => TransactionDirection::class,
             'payment_method' => PaymentMethod::class,
             'amount' => 'decimal:2',
         ];
