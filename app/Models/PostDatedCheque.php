@@ -39,4 +39,9 @@ class PostDatedCheque extends Model
     {
         return $this->belongsTo(Payment::class, 'payment_id');
     }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
 }
