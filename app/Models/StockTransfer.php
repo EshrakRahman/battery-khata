@@ -19,6 +19,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class StockTransfer extends Model
 {
+    protected static function booted(): void
+    {
+        static::deleting(function (StockTransfer $transfer) {
+            InventoryTransaction::query()
+                ->where('reference_type', StockTransfer::class)
+                ->where('reference_id', $transfer->id)
+                ->delete();
+        });
+    }
+
     public function sourceWarehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class, 'source_warehouse_id');

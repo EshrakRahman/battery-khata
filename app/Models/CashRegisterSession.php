@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @mixin IdeHelperCashRegisterSession
@@ -38,5 +39,10 @@ class CashRegisterSession extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'opened_by');
+    }
+
+    public function cashbookEntries(): HasMany
+    {
+        return $this->hasMany(CashbookEntry::class);
     }
 }

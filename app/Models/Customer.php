@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @mixin IdeHelperCustomer
@@ -29,5 +30,10 @@ class Customer extends Model
             'credit_limit' => 'decimal:2',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function ledgers(): HasMany
+    {
+        return $this->hasMany(CustomerLedger::class, 'customer_id');
     }
 }
