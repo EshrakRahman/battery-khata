@@ -169,6 +169,79 @@ class InventoryService
     }
 
     /**
+     * Record a faulty battery being received for warranty.
+     *
+     * @throws Throwable
+     * @throws InvalidSerialStatusException
+     */
+    public function recordWarrantyIn(
+        BatterySerial $serial,
+        Warehouse $warehouse,
+        Model $referenceClaim,
+        User $createdBy
+    ): BatterySerial {
+        return DB::transaction(function () use ($serial, $warehouse, $referenceClaim, $createdBy) {
+            $lockedSerial = BatterySerial::query()->where('id', $serial->getKey())->lockForUpdate()->firstOrFail();
+
+            if ($lockedSerial->getAttribute('current_status') !== BatteryStatus::Sold) {
+                throw new InvalidSerialStatusException(
+                    "Battery serial {$lockedSerial->getAttribute('serial_no')} must be sold to claim warranty."
+                );
+            }
+
+            $lockedSerial->update(['current_status' => BatteryStatus::WarrantyClaim]);
+
+            InventoryTransaction::query()->create([
+                'battery_serial_id' => $lockedSerial->getKey(),
+                'warehouse_id' => $warehouse->getKey(),
+                'transaction_type' => TransactionType::WarrantyIn,
+                'reference_type' => get_class($referenceClaim),
+                'reference_id' => $referenceClaim->getKey(),
+                'created_by' => $createdBy->getKey(),
+            ]);
+
+            return $lockedSerial;
+        });
+    }
+
+    /**
+     * Record a replacement battery (or returned faulty battery) leaving stock/warehouse.
+     *
+     * @throws Throwable
+     * @throws InvalidSerialStatusException
+     */
+    public function recordWarrantyOut(
+        BatterySerial $serial,
+        Warehouse $warehouse,
+        Model $referenceClaim,
+        User $createdBy,
+        BatteryStatus $targetStatus = BatteryStatus::Sold
+    ): BatterySerial {
+        return DB::transaction(function () use ($serial, $warehouse, $referenceClaim, $createdBy, $targetStatus) {
+            $lockedSerial = BatterySerial::query()->where('id', $serial->getKey())->lockForUpdate()->firstOrFail();
+
+            if (! in_array($lockedSerial->getAttribute('current_status'), [BatteryStatus::InStock, BatteryStatus::WarrantyClaim])) {
+                throw new InvalidSerialStatusException(
+                    "Battery serial {$lockedSerial->getAttribute('serial_no')} status must be in_stock or warranty_claim to be resolved."
+                );
+            }
+
+            $lockedSerial->update(['current_status' => $targetStatus]);
+
+            InventoryTransaction::query()->create([
+                'battery_serial_id' => $lockedSerial->getKey(),
+                'warehouse_id' => $warehouse->getKey(),
+                'transaction_type' => TransactionType::WarrantyOut,
+                'reference_type' => get_class($referenceClaim),
+                'reference_id' => $referenceClaim->getKey(),
+                'created_by' => $createdBy->getKey(),
+            ]);
+
+            return $lockedSerial;
+        });
+    }
+
+    /**
      * Record a transfer out of a source warehouse.
      *
      * @throws Throwable
