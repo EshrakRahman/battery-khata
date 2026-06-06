@@ -169,20 +169,18 @@ class InventoryService
     }
 
     /**
-     * Record a stock transfer movement.
+     * Record a transfer out of a source warehouse.
      *
      * @throws Throwable
      * @throws InvalidSerialStatusException
      */
-    public function recordTransfer(
+    public function recordTransferOut(
         BatterySerial $serial,
         Warehouse $source,
-        Warehouse $destination,
         Model $transfer,
         User $createdBy
     ): BatterySerial {
-        return DB::transaction(function () use ($serial, $source, $destination, $transfer, $createdBy) {
-            // Lock the serial row
+        return DB::transaction(function () use ($serial, $source, $transfer, $createdBy) {
             $lockedSerial = BatterySerial::query()->where('id', $serial->getKey())->lockForUpdate()->firstOrFail();
 
             if ($lockedSerial->getAttribute('current_status') !== BatteryStatus::InStock) {
@@ -191,7 +189,6 @@ class InventoryService
                 );
             }
 
-            // Create TransferOut from source Godown
             InventoryTransaction::query()->create([
                 'battery_serial_id' => $lockedSerial->getKey(),
                 'warehouse_id' => $source->getKey(),
@@ -201,7 +198,24 @@ class InventoryService
                 'created_by' => $createdBy->getKey(),
             ]);
 
-            // Create TransferIn to destination Showroom
+            return $lockedSerial;
+        });
+    }
+
+    /**
+     * Record a transfer into a destination warehouse.
+     *
+     * @throws Throwable
+     */
+    public function recordTransferIn(
+        BatterySerial $serial,
+        Warehouse $destination,
+        Model $transfer,
+        User $createdBy
+    ): BatterySerial {
+        return DB::transaction(function () use ($serial, $destination, $transfer, $createdBy) {
+            $lockedSerial = BatterySerial::query()->where('id', $serial->getKey())->lockForUpdate()->firstOrFail();
+
             InventoryTransaction::query()->create([
                 'battery_serial_id' => $lockedSerial->getKey(),
                 'warehouse_id' => $destination->getKey(),
@@ -216,6 +230,26 @@ class InventoryService
     }
 
     /**
+     * Record a stock transfer movement.
+     *
+     * @throws Throwable
+     * @throws InvalidSerialStatusException
+     */
+    public function recordTransfer(
+        BatterySerial $serial,
+        Warehouse $source,
+        Warehouse $destination,
+        Model $transfer,
+        User $createdBy
+    ): BatterySerial {
+        return DB::transaction(function () use ($serial, $source, $destination, $transfer, $createdBy) {
+            $this->recordTransferOut($serial, $source, $transfer, $createdBy);
+
+            return $this->recordTransferIn($serial, $destination, $transfer, $createdBy);
+        });
+    }
+
+    /**
      * Dynamically derive a serial's current location from the latest transaction log.
      */
     public function getCurrentWarehouse(BatterySerial $serial): ?Warehouse
@@ -223,6 +257,10 @@ class InventoryService
         $latestTransaction = InventoryTransaction::query()->where('battery_serial_id', $serial->getKey())
             ->latest('id')
             ->first();
+
+        if ($latestTransaction && $latestTransaction->transaction_type === TransactionType::TransferOut) {
+            return null;
+        }
 
         return $latestTransaction?->getAttribute('warehouse');
     }

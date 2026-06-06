@@ -158,5 +158,13 @@
     "Brand": "ব্র্যান্ড",
     "Model": "মডেল",
     "Items Sold": "বিক্রিত পণ্যসমূহ",
-    "Sale Price": "বিক্রয় মূল্য"
+    "Sale Price": "বিক্রয় মূল্য",
+    "Stock Transfers": "স্টক স্থানান্তরসমূহ",
+    "Stock Transfer": "স্টক স্থানান্তর",
+    "Source Warehouse": "উৎস গুদাম",
+    "Destination Warehouse": "গন্তব্য গুদাম",
+    "Transfer Date": "স্থানান্তরের তারিখ",
+    "Pending": "পেন্ডিং",
+    "InTransit": "চলতি পথে (In Transit)",
+    "The destination warehouse must be different from the source warehouse.": "গন্তব্য গুদামটি উৎস গুদাম থেকে ভিন্ন হতে হবে।"
 }
