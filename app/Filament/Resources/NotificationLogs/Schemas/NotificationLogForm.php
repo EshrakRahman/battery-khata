@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\NotificationLogs\Schemas;
 
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 
 class NotificationLogForm
