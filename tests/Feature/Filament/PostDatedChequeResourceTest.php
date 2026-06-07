@@ -1,10 +1,13 @@
 <?php
 
+use App\Enums\PaymentMethod;
 use App\Enums\PdcStatus;
+use App\Enums\TransactionDirection;
 use App\Enums\UserRole;
 use App\Filament\Resources\PostDatedCheques\Pages\CreatePostDatedCheque;
 use App\Filament\Resources\PostDatedCheques\Pages\EditPostDatedCheque;
 use App\Filament\Resources\PostDatedCheques\Pages\ListPostDatedCheques;
+use App\Models\CashRegisterSession;
 use App\Models\Customer;
 use App\Models\PostDatedCheque;
 use App\Models\User;
@@ -23,6 +26,13 @@ beforeEach(function () {
     ]);
 
     $this->actingAs($this->admin);
+
+    $this->session = CashRegisterSession::create([
+        'opened_by' => $this->admin->id,
+        'opened_at' => now(),
+        'opening_cash' => 1000.00,
+        'expected_cash' => 1000.00,
+    ]);
 
     $this->customer = Customer::create([
         'name' => 'Kashem Driver',
@@ -112,6 +122,16 @@ test('can transition cheque from deposited to cleared', function () {
     $pdc->refresh();
     expect($pdc->status)->toBe(PdcStatus::Cleared)
         ->and($pdc->cleared_date->toDateString())->toBe(now()->toDateString());
+
+    $this->assertDatabaseHas('cashbook_entries', [
+        'cash_register_session_id' => $this->session->id,
+        'entry_type' => 'ChequeClearance',
+        'direction' => TransactionDirection::In->value,
+        'payment_method' => PaymentMethod::Bank->value,
+        'amount' => 5000.00,
+        'reference_type' => PostDatedCheque::class,
+        'reference_id' => $pdc->id,
+    ]);
 });
 
 test('can transition cheque from deposited to bounced and dispatch SMS notification', function () {

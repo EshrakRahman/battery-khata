@@ -2,14 +2,20 @@
 
 namespace App\Filament\Resources\PostDatedCheques\Pages;
 
+use App\Enums\PaymentMethod;
 use App\Enums\PdcStatus;
+use App\Enums\TransactionDirection;
 use App\Filament\Resources\PostDatedCheques\PostDatedChequeResource;
+use App\Models\CashbookEntry;
+use App\Models\CashRegisterSession;
+use App\Models\PostDatedCheque;
 use App\Services\SmsService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\DB;
 
 class EditPostDatedCheque extends EditRecord
 {
@@ -51,10 +57,39 @@ class EditPostDatedCheque extends EditRecord
                         ->default(now()),
                 ])
                 ->action(function ($record, array $data) {
-                    $record->update([
-                        'status' => PdcStatus::Cleared,
-                        'cleared_date' => $data['cleared_date'],
-                    ]);
+                    $user = auth()->user();
+                    $activeSession = CashRegisterSession::where('opened_by', $user->id)
+                        ->whereNull('closed_at')
+                        ->first();
+
+                    if (! $activeSession) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Active Cash Register Session Required'))
+                            ->body(__('You must open a cash register session to clear cheques.'))
+                            ->send();
+
+                        return;
+                    }
+
+                    DB::transaction(function () use ($record, $data, $user, $activeSession) {
+                        $record->update([
+                            'status' => PdcStatus::Cleared,
+                            'cleared_date' => $data['cleared_date'],
+                        ]);
+
+                        CashbookEntry::create([
+                            'cash_register_session_id' => $activeSession->id,
+                            'entry_type' => 'ChequeClearance',
+                            'direction' => TransactionDirection::In,
+                            'payment_method' => PaymentMethod::Bank,
+                            'amount' => $record->amount,
+                            'reference_type' => PostDatedCheque::class,
+                            'reference_id' => $record->id,
+                            'notes' => __('Cleared Cheque #').$record->cheque_number,
+                            'created_by' => $user->id,
+                        ]);
+                    });
 
                     Notification::make()
                         ->title(__('Cheque Cleared'))

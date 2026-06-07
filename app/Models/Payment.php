@@ -46,4 +46,9 @@ class Payment extends Model
     {
         return $this->hasMany(PaymentAllocation::class, 'payment_id');
     }
+
+    public function receivedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by');
+    }
 }

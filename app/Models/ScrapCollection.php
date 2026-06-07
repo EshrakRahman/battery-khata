@@ -42,4 +42,19 @@ class ScrapCollection extends Model
     {
         return $this->belongsTo(ScrapDisposal::class, 'scrap_disposal_id');
     }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class, 'invoice_id');
+    }
+
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id');
+    }
 }
