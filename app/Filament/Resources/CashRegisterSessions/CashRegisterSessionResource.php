@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CashRegisterSessions;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\CashRegisterSessions\Pages\CreateCashRegisterSession;
 use App\Filament\Resources\CashRegisterSessions\Pages\EditCashRegisterSession;
 use App\Filament\Resources\CashRegisterSessions\Pages\ListCashRegisterSessions;
@@ -14,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CashRegisterSessionResource extends Resource
 {
@@ -56,6 +58,17 @@ class CashRegisterSessionResource extends Resource
         return [
             CashbookEntriesRelationManager::class,
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user() && auth()->user()->role === UserRole::CounterBoy) {
+            $query->where('opened_by', auth()->id());
+        }
+
+        return $query;
     }
 
     public static function getPages(): array
