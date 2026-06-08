@@ -60,10 +60,17 @@ test('dashboard page and widgets render for admin', function () {
 test('business overview stats widget calculates weekly/monthly stats and dues correctly', function () {
     $this->actingAs($this->admin);
 
+    $session = CashRegisterSession::create([
+        'opened_by' => $this->admin->id,
+        'opened_at' => now(),
+        'opening_cash' => 1000.00,
+        'expected_cash' => 1000.00,
+    ]);
+
     // Create a payment for this week
     Payment::create([
         'customer_id' => $this->customer->id,
-        'cash_register_session_id' => 1,
+        'cash_register_session_id' => $session->id,
         'payment_date' => now(),
         'payment_method' => PaymentMethod::Cash,
         'total_amount' => 5000.00,
@@ -74,7 +81,7 @@ test('business overview stats widget calculates weekly/monthly stats and dues co
     Invoice::create([
         'invoice_no' => 'INV-001',
         'customer_id' => $this->customer->id,
-        'cash_register_session_id' => 1,
+        'cash_register_session_id' => $session->id,
         'invoice_date' => now(),
         'grand_total' => 8000.00,
         'created_by' => $this->admin->id,
@@ -101,7 +108,7 @@ test('business overview stats widget calculates weekly/monthly stats and dues co
     Livewire::test(BusinessOverviewStats::class)
         ->assertSee(__('Weekly Collections'))
         ->assertSee('5,000.00')
-        ->assertSee(__('Weekly Sales'))
+        ->assertSee(__('Invoiced: '))
         ->assertSee('8,000.00')
         ->assertSee(__('Total Outstanding Dues'))
         ->assertSee('3,000.00')

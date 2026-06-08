@@ -8,7 +8,7 @@ use Filament\Widgets\ChartWidget as BaseWidget;
 
 class CollectionsChart extends BaseWidget
 {
-    protected static ?string $pollingInterval = '60s';
+    protected ?string $pollingInterval = '60s';
 
     public function getHeading(): string
     {

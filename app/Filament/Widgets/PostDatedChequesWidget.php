@@ -9,6 +9,7 @@ use App\Models\CashbookEntry;
 use App\Models\CashRegisterSession;
 use App\Models\PostDatedCheque;
 use App\Services\SmsService;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -16,12 +17,11 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class PostDatedChequesWidget extends BaseWidget
 {
-    protected static ?string $pollingInterval = '60s';
+    protected ?string $pollingInterval = '60s';
 
     public function getHeading(): string
     {
@@ -72,7 +72,7 @@ class PostDatedChequesWidget extends BaseWidget
                     ->formatStateUsing(fn (PdcStatus $state): string => __($state->value)),
             ])
             ->actions([
-                Tables\Actions\Action::make('deposit')
+                Action::make('deposit')
                     ->label(__('Deposit'))
                     ->color('info')
                     ->icon('heroicon-m-arrow-right-end-on-rectangle')
@@ -95,7 +95,7 @@ class PostDatedChequesWidget extends BaseWidget
                             ->send();
                     }),
 
-                Tables\Actions\Action::make('clear')
+                Action::make('clear')
                     ->label(__('Clear'))
                     ->color('success')
                     ->icon('heroicon-m-check-circle')
@@ -147,7 +147,7 @@ class PostDatedChequesWidget extends BaseWidget
                             ->send();
                     }),
 
-                Tables\Actions\Action::make('bounce')
+                Action::make('bounce')
                     ->label(__('Bounce'))
                     ->color('danger')
                     ->icon('heroicon-m-x-circle')

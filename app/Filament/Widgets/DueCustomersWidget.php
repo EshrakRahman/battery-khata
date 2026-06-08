@@ -5,6 +5,8 @@ namespace App\Filament\Widgets;
 use App\Models\Customer;
 use App\Models\CustomerLedger;
 use App\Services\SmsService;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Tables;
@@ -16,7 +18,7 @@ use Illuminate\Support\Collection;
 
 class DueCustomersWidget extends BaseWidget
 {
-    protected static ?string $pollingInterval = '60s';
+    protected ?string $pollingInterval = '60s';
 
     public function getHeading(): string
     {
@@ -80,7 +82,7 @@ class DueCustomersWidget extends BaseWidget
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('sendSMS')
+                Action::make('sendSMS')
                     ->label(__('Send SMS'))
                     ->icon('heroicon-m-paper-airplane')
                     ->color('primary')
@@ -101,7 +103,7 @@ class DueCustomersWidget extends BaseWidget
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkAction::make('sendBulkSMS')
+                BulkAction::make('sendBulkSMS')
                     ->label(__('Send Bulk SMS'))
                     ->icon('heroicon-m-chat-bubble-left-right')
                     ->color('primary')
