@@ -16,7 +16,7 @@ Designed to move away from static CRUD patterns, this system implements event-dr
 
 Here is a preview of the premium admin dashboard panel:
 
-![Admin Dashboard](admin.png)
+![Admin Dashboard](dashboard.png)
 
 ---
 
