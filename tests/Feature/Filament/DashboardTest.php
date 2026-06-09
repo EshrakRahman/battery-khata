@@ -2,13 +2,34 @@
 
 use App\Enums\PaymentMethod;
 use App\Enums\PdcStatus;
-use App\Enums\TransactionDirection;
 use App\Enums\UserRole;
+use App\Filament\Pages\Dashboard;
+use App\Filament\Resources\BatterySerials\BatterySerialResource;
+use App\Filament\Resources\Brokers\BrokerResource;
+use App\Filament\Resources\CashbookEntries\CashbookEntryResource;
+use App\Filament\Resources\CashRegisterSessions\CashRegisterSessionResource;
+use App\Filament\Resources\Customers\CustomerResource;
+use App\Filament\Resources\ExpenseCategories\ExpenseCategoryResource;
+use App\Filament\Resources\Expenses\ExpenseResource;
+use App\Filament\Resources\Invoices\InvoiceResource;
+use App\Filament\Resources\LoanAccounts\LoanAccountResource;
+use App\Filament\Resources\NotificationLogs\NotificationLogResource;
+use App\Filament\Resources\Payments\PaymentResource;
+use App\Filament\Resources\PostDatedCheques\PostDatedChequeResource;
+use App\Filament\Resources\ProductCategories\ProductCategoryResource;
+use App\Filament\Resources\Products\ProductResource;
+use App\Filament\Resources\PurchaseInvoices\PurchaseInvoiceResource;
+use App\Filament\Resources\ScrapCollections\ScrapCollectionResource;
+use App\Filament\Resources\ScrapDisposals\ScrapDisposalResource;
+use App\Filament\Resources\StockTransfers\StockTransferResource;
+use App\Filament\Resources\SupplierPayments\SupplierPaymentResource;
+use App\Filament\Resources\Suppliers\SupplierResource;
+use App\Filament\Resources\Warehouses\WarehouseResource;
+use App\Filament\Resources\WarrantyClaims\WarrantyClaimResource;
 use App\Filament\Widgets\BusinessOverviewStats;
 use App\Filament\Widgets\CollectionsChart;
 use App\Filament\Widgets\DueCustomersWidget;
 use App\Filament\Widgets\PostDatedChequesWidget;
-use App\Models\CashbookEntry;
 use App\Models\CashRegisterSession;
 use App\Models\Customer;
 use App\Models\CustomerLedger;
@@ -17,7 +38,6 @@ use App\Models\NotificationLog;
 use App\Models\Payment;
 use App\Models\PostDatedCheque;
 use App\Models\User;
-use Filament\Pages\Dashboard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -116,20 +136,84 @@ test('business overview stats widget calculates weekly/monthly stats and dues co
         ->assertSee('1');
 });
 
-test('counter boy cannot see SMS log stats in overview stats widget', function () {
+test('counter boy is redirected from dashboard and it does not show in navigation', function () {
     $this->actingAs($this->counterBoy);
 
-    // Create a mock SMS log today
-    NotificationLog::create([
-        'recipient' => '01700998877',
-        'notification_type' => 'SMS',
-        'payload' => 'Due reminder',
-        'delivery_status' => 'logged',
-    ]);
+    $this->get('/admin')
+        ->assertRedirect(route('filament.admin.resources.cash-register-sessions.index'));
 
-    Livewire::test(BusinessOverviewStats::class)
-        ->assertSee(__('Weekly Collections'))
-        ->assertDontSee(__('SMS Sent Today'));
+    expect(Dashboard::shouldRegisterNavigation())->toBeFalse();
+});
+
+test('admin dashboard registers in navigation', function () {
+    $this->actingAs($this->admin);
+
+    expect(Dashboard::shouldRegisterNavigation())->toBeTrue();
+});
+
+test('counter boy cannot view dashboard widgets', function () {
+    $this->actingAs($this->counterBoy);
+
+    expect(BusinessOverviewStats::canView())->toBeFalse()
+        ->and(CollectionsChart::canView())->toBeFalse()
+        ->and(DueCustomersWidget::canView())->toBeFalse()
+        ->and(PostDatedChequesWidget::canView())->toBeFalse();
+});
+
+test('admin and manager can view dashboard widgets', function () {
+    $this->actingAs($this->admin);
+
+    expect(BusinessOverviewStats::canView())->toBeTrue()
+        ->and(CollectionsChart::canView())->toBeTrue()
+        ->and(DueCustomersWidget::canView())->toBeTrue()
+        ->and(PostDatedChequesWidget::canView())->toBeTrue();
+});
+
+test('counter boy sidebar navigation excludes restricted resources', function () {
+    $this->actingAs($this->counterBoy);
+
+    // Resources that should NOT register navigation for Counter Boy
+    expect(BatterySerialResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(CashbookEntryResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(ExpenseCategoryResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(LoanAccountResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(NotificationLogResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(ProductCategoryResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(ProductResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(PurchaseInvoiceResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(ScrapDisposalResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(SupplierPaymentResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(SupplierResource::shouldRegisterNavigation())->toBeFalse()
+        ->and(WarehouseResource::shouldRegisterNavigation())->toBeFalse();
+
+    // Resources that SHOULD register navigation for Counter Boy (e.g. they inherit true by default)
+    expect(InvoiceResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(PaymentResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(CustomerResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(BrokerResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(CashRegisterSessionResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(ScrapCollectionResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(StockTransferResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(WarrantyClaimResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(PostDatedChequeResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(ExpenseResource::shouldRegisterNavigation())->toBeTrue();
+});
+
+test('admin sidebar navigation includes all resources', function () {
+    $this->actingAs($this->admin);
+
+    expect(BatterySerialResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(CashbookEntryResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(ExpenseCategoryResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(LoanAccountResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(NotificationLogResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(ProductCategoryResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(ProductResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(PurchaseInvoiceResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(ScrapDisposalResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(SupplierPaymentResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(SupplierResource::shouldRegisterNavigation())->toBeTrue()
+        ->and(WarehouseResource::shouldRegisterNavigation())->toBeTrue();
 });
 
 test('due customers widget table lists only customers with positive balance', function () {
@@ -273,4 +357,54 @@ test('can deposit, clear, and bounce post-dated cheques from widget', function (
         'notification_type' => 'SMS',
         'delivery_status' => 'logged',
     ]);
+});
+
+test('dashboard grid layout and widget spans are configured correctly', function () {
+    $this->actingAs($this->admin);
+
+    $dashboard = new Dashboard;
+    expect($dashboard->getColumns())->toBe(['md' => 2]);
+
+    $statsWidget = new BusinessOverviewStats;
+    $reflection = new ReflectionClass(BusinessOverviewStats::class);
+    $columnSpanProp = $reflection->getProperty('columnSpan');
+    $columnSpanProp->setAccessible(true);
+    expect($columnSpanProp->getValue($statsWidget))->toBe('full');
+
+    $chartWidget = new CollectionsChart;
+    $reflectionChart = new ReflectionClass(CollectionsChart::class);
+    $columnSpanChart = $reflectionChart->getProperty('columnSpan');
+    $columnSpanChart->setAccessible(true);
+    expect($columnSpanChart->getValue($chartWidget))->toBe('full');
+
+    $dueWidget = new DueCustomersWidget;
+    $reflectionDue = new ReflectionClass(DueCustomersWidget::class);
+    $columnSpanDue = $reflectionDue->getProperty('columnSpan');
+    $columnSpanDue->setAccessible(true);
+    expect($columnSpanDue->getValue($dueWidget))->toBe(1);
+
+    $pdcWidget = new PostDatedChequesWidget;
+    $reflectionPdc = new ReflectionClass(PostDatedChequesWidget::class);
+    $columnSpanPdc = $reflectionPdc->getProperty('columnSpan');
+    $columnSpanPdc->setAccessible(true);
+    expect($columnSpanPdc->getValue($pdcWidget))->toBe(1);
+});
+
+test('collections chart supports dynamic filters', function () {
+    $this->actingAs($this->admin);
+
+    $chart = new CollectionsChart;
+    $reflection = new ReflectionClass(CollectionsChart::class);
+    $getFilters = $reflection->getMethod('getFilters');
+    $getFilters->setAccessible(true);
+    $filters = $getFilters->invoke($chart);
+
+    expect($filters)->toHaveKeys(['7', '30', '90']);
+
+    // Check dynamic heading changes with filter
+    $chart->filter = '7';
+    expect($chart->getHeading())->toContain('Last 7 Days');
+
+    $chart->filter = '90';
+    expect($chart->getHeading())->toContain('Last 90 Days');
 });

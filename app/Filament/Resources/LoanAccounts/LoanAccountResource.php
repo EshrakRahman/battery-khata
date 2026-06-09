@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LoanAccounts;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\LoanAccounts\Pages\CreateLoanAccount;
 use App\Filament\Resources\LoanAccounts\Pages\EditLoanAccount;
 use App\Filament\Resources\LoanAccounts\Pages\ListLoanAccounts;
@@ -19,6 +20,11 @@ class LoanAccountResource extends Resource
     protected static ?string $model = LoanAccount::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

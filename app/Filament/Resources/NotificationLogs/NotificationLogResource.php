@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NotificationLogs;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\NotificationLogs\Pages\ListNotificationLogs;
 use App\Filament\Resources\NotificationLogs\Schemas\NotificationLogForm;
 use App\Filament\Resources\NotificationLogs\Tables\NotificationLogsTable;
@@ -17,6 +18,11 @@ class NotificationLogResource extends Resource
     protected static ?string $model = NotificationLog::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

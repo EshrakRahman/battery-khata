@@ -39,7 +39,7 @@ test('active manager users can access the admin dashboard', function () {
         ->assertSuccessful();
 });
 
-test('active counter boy users can access the admin dashboard', function () {
+test('active counter boy users are redirected from the admin dashboard to cash register sessions', function () {
     $counterBoy = User::create([
         'name' => 'Counter Boy User',
         'email' => 'counter@test.com',
@@ -50,7 +50,7 @@ test('active counter boy users can access the admin dashboard', function () {
 
     $this->actingAs($counterBoy)
         ->get('/admin')
-        ->assertSuccessful();
+        ->assertRedirect(route('filament.admin.resources.cash-register-sessions.index'));
 });
 
 test('inactive users cannot access the admin dashboard', function () {

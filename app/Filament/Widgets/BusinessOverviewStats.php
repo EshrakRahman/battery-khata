@@ -15,6 +15,13 @@ class BusinessOverviewStats extends BaseWidget
 {
     protected ?string $pollingInterval = '30s';
 
+    protected int|string|array $columnSpan = 'full';
+
+    public static function canView(): bool
+    {
+        return in_array(auth()->user()?->role, [UserRole::Admin, UserRole::Manager]);
+    }
+
     protected function getStats(): array
     {
         // 1. Weekly Collections
@@ -76,15 +83,18 @@ class BusinessOverviewStats extends BaseWidget
             Stat::make(__('Weekly Collections'), number_format($thisWeekCollections, 2).' BDT')
                 ->description(__('Invoiced: ').number_format($thisWeekSales, 2).' BDT')
                 ->descriptionIcon($thisWeekCollections >= $lastWeekCollections ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
-                ->color($thisWeekCollections >= $lastWeekCollections ? 'success' : 'warning'),
+                ->color($thisWeekCollections >= $lastWeekCollections ? 'success' : 'warning')
+                ->icon('heroicon-m-banknotes'),
 
             Stat::make(__('Monthly Collections'), number_format($thisMonthCollections, 2).' BDT')
                 ->description(__('Invoiced: ').number_format($thisMonthSales, 2).' BDT')
-                ->color('info'),
+                ->color('info')
+                ->icon('heroicon-m-presentation-chart-line'),
 
             Stat::make(__('Total Outstanding Dues'), number_format($totalDue, 2).' BDT')
                 ->description($dueCustomersCount.' '.__('customers with unpaid balance'))
-                ->color('danger'),
+                ->color('danger')
+                ->icon('heroicon-m-user-group'),
         ];
 
         // Conditional display based on user roles
@@ -92,7 +102,8 @@ class BusinessOverviewStats extends BaseWidget
         if ($user && in_array($user->role, [UserRole::Admin, UserRole::Manager])) {
             $stats[] = Stat::make(__('SMS Sent Today'), $smsToday)
                 ->description(__('Sent this month: ').$smsThisMonth)
-                ->color('primary');
+                ->color('primary')
+                ->icon('heroicon-m-chat-bubble-oval-left');
         }
 
         return $stats;

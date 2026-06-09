@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Suppliers;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\Suppliers\Pages\CreateSupplier;
 use App\Filament\Resources\Suppliers\Pages\EditSupplier;
 use App\Filament\Resources\Suppliers\Pages\ListSuppliers;
@@ -20,6 +21,11 @@ class SupplierResource extends Resource
     protected static ?string $model = Supplier::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PurchaseInvoices;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\PurchaseInvoices\Pages\CreatePurchaseInvoice;
 use App\Filament\Resources\PurchaseInvoices\Pages\EditPurchaseInvoice;
 use App\Filament\Resources\PurchaseInvoices\Pages\ListPurchaseInvoices;
@@ -19,6 +20,11 @@ class PurchaseInvoiceResource extends Resource
     protected static ?string $model = PurchaseInvoice::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

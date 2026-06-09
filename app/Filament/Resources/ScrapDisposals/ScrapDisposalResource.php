@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ScrapDisposals;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\ScrapDisposals\Pages\CreateScrapDisposal;
 use App\Filament\Resources\ScrapDisposals\Pages\ListScrapDisposals;
 use App\Filament\Resources\ScrapDisposals\Schemas\ScrapDisposalForm;
@@ -18,6 +19,11 @@ class ScrapDisposalResource extends Resource
     protected static ?string $model = ScrapDisposal::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTrash;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

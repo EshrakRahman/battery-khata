@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProductCategories;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\ProductCategories\Pages\CreateProductCategory;
 use App\Filament\Resources\ProductCategories\Pages\EditProductCategory;
 use App\Filament\Resources\ProductCategories\Pages\ListProductCategories;
@@ -19,6 +20,11 @@ class ProductCategoryResource extends Resource
     protected static ?string $model = ProductCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

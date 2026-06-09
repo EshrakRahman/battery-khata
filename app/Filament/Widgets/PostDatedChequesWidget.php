@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Enums\PaymentMethod;
 use App\Enums\PdcStatus;
 use App\Enums\TransactionDirection;
+use App\Enums\UserRole;
 use App\Models\CashbookEntry;
 use App\Models\CashRegisterSession;
 use App\Models\PostDatedCheque;
@@ -13,7 +14,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -22,6 +22,13 @@ use Illuminate\Support\Facades\DB;
 class PostDatedChequesWidget extends BaseWidget
 {
     protected ?string $pollingInterval = '60s';
+
+    protected int|string|array $columnSpan = 1;
+
+    public static function canView(): bool
+    {
+        return in_array(auth()->user()?->role, [UserRole::Admin, UserRole::Manager]);
+    }
 
     public function getHeading(): string
     {
@@ -36,6 +43,7 @@ class PostDatedChequesWidget extends BaseWidget
                     ->whereIn('status', [PdcStatus::Pending, PdcStatus::Deposited])
                     ->orderBy('maturity_date', 'asc')
             )
+            ->defaultPaginationPageOption(5)
             ->columns([
                 TextColumn::make('customer.name')
                     ->label(__('Customer'))

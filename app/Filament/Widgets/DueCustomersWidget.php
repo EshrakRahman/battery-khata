@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\UserRole;
 use App\Models\Customer;
 use App\Models\CustomerLedger;
 use App\Services\SmsService;
@@ -9,7 +10,6 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -19,6 +19,13 @@ use Illuminate\Support\Collection;
 class DueCustomersWidget extends BaseWidget
 {
     protected ?string $pollingInterval = '60s';
+
+    protected int|string|array $columnSpan = 1;
+
+    public static function canView(): bool
+    {
+        return in_array(auth()->user()?->role, [UserRole::Admin, UserRole::Manager]);
+    }
 
     public function getHeading(): string
     {
@@ -47,6 +54,8 @@ class DueCustomersWidget extends BaseWidget
                     )
                     ->whereRaw('(SELECT running_balance FROM customer_ledgers WHERE customer_ledgers.customer_id = customers.id ORDER BY id DESC LIMIT 1) > 0')
             )
+            ->defaultSort('running_balance', 'desc')
+            ->defaultPaginationPageOption(5)
             ->columns([
                 TextColumn::make('name')
                     ->label(__('Name'))

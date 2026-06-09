@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ExpenseCategories;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\ExpenseCategories\Pages\CreateExpenseCategory;
 use App\Filament\Resources\ExpenseCategories\Pages\EditExpenseCategory;
 use App\Filament\Resources\ExpenseCategories\Pages\ListExpenseCategories;
@@ -19,6 +20,11 @@ class ExpenseCategoryResource extends Resource
     protected static ?string $model = ExpenseCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFolder;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

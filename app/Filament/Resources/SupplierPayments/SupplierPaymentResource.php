@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SupplierPayments;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\SupplierPayments\Pages\CreateSupplierPayment;
 use App\Filament\Resources\SupplierPayments\Pages\ListSupplierPayments;
 use App\Filament\Resources\SupplierPayments\Schemas\SupplierPaymentForm;
@@ -18,6 +19,11 @@ class SupplierPaymentResource extends Resource
     protected static ?string $model = SupplierPayment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {
