@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\CashbookEntries\Schemas;
 
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 
 class CashbookEntryForm

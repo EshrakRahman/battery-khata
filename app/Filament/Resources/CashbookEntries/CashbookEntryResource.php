@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CashbookEntries;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\CashbookEntries\Pages\ListCashbookEntries;
 use App\Filament\Resources\CashbookEntries\Schemas\CashbookEntryForm;
 use App\Filament\Resources\CashbookEntries\Tables\CashbookEntriesTable;
@@ -17,6 +18,11 @@ class CashbookEntryResource extends Resource
     protected static ?string $model = CashbookEntry::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedQueueList;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

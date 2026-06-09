@@ -26,3 +26,11 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 .agent_handover.md
+/docs
+
+# AI / Agentic coding tool folders
+/.agents/
+/.ai/
+/.junie/
+AGENTS.md
+.agents.md

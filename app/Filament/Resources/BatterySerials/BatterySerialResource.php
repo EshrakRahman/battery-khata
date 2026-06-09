@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BatterySerials;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\BatterySerials\Pages\CreateBatterySerial;
 use App\Filament\Resources\BatterySerials\Pages\EditBatterySerial;
 use App\Filament\Resources\BatterySerials\Pages\ListBatterySerials;
@@ -20,6 +21,11 @@ class BatterySerialResource extends Resource
     protected static ?string $model = BatterySerial::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

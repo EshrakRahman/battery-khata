@@ -107,4 +107,21 @@ class CashSessionService
             return $session->refresh();
         });
     }
+
+    /**
+     * Get the active cash register session for a user.
+     */
+    public function getActiveSession(?User $user = null): ?CashRegisterSession
+    {
+        $userId = $user ? $user->getKey() : auth()->id();
+
+        if (! $userId) {
+            return null;
+        }
+
+        return CashRegisterSession::query()
+            ->where('opened_by', $userId)
+            ->whereNull('closed_at')
+            ->first();
+    }
 }

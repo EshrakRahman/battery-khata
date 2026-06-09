@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Warehouses;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\Warehouses\Pages\CreateWarehouse;
 use App\Filament\Resources\Warehouses\Pages\EditWarehouse;
 use App\Filament\Resources\Warehouses\Pages\ListWarehouses;
@@ -19,6 +20,11 @@ class WarehouseResource extends Resource
     protected static ?string $model = Warehouse::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {

@@ -11,4 +11,5 @@ enum PaymentMethod: string
     case Bank = 'bank';
     case Cheque = 'cheque';
     case ScrapAdjustment = 'scrap_adjustment';
+    case SupplierCredit = 'SupplierCredit';
 }

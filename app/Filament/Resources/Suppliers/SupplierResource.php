@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Suppliers;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\Suppliers\Pages\CreateSupplier;
 use App\Filament\Resources\Suppliers\Pages\EditSupplier;
 use App\Filament\Resources\Suppliers\Pages\ListSuppliers;
+use App\Filament\Resources\Suppliers\RelationManagers\SupplierLedgerRelationManager;
 use App\Filament\Resources\Suppliers\Schemas\SupplierForm;
 use App\Filament\Resources\Suppliers\Tables\SuppliersTable;
 use App\Models\Supplier;
@@ -19,6 +21,11 @@ class SupplierResource extends Resource
     protected static ?string $model = Supplier::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role !== UserRole::CounterBoy;
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -53,7 +60,7 @@ class SupplierResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            SupplierLedgerRelationManager::class,
         ];
     }
 
